@@ -10,6 +10,7 @@ namespace BOs.Entities
 {
     public class OrderDetail
     {
+        public int OrderDetailId { get; set; }
         [Key, Column(Order = 0)]
         public int OrderId { get; set; }
 
