@@ -1,4 +1,9 @@
+using System;
+using BOs;
 using eShop.Components;
+using Microsoft.EntityFrameworkCore;
+using RepositoryLayer;
+using ServiceLayer;
 
 namespace eShop
 {
@@ -11,6 +16,13 @@ namespace eShop
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+            builder.Services.AddSession();
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            builder.Services.AddDbContext<EShopContext>(options =>
+                options.UseSqlServer(connectionString));
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddScoped<MemberService>();
+            builder.Services.AddScoped<MemberRepository>();
 
             var app = builder.Build();
 
@@ -25,7 +37,7 @@ namespace eShop
             }
 
             app.UseHttpsRedirection();
-
+            app.UseSession();
             app.UseStaticFiles();
             app.UseAntiforgery();
 
