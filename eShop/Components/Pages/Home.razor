@@ -44,7 +44,7 @@
             {
                 <div class="product-card">
                     <h4>@product.ProductName</h4>
-                    <p>💰 Price: <strong>@product.UnitPrice.ToString("C")</strong></p>
+                    <p>💰 Price: <span style="color: green"><strong>@product.UnitPrice.ToString("C")</strong></span></p>
                     <p>🏷️ Category: @product.CategoryName</p>
                     <button @onclick="() => AddToCart(product)" class="add-button">Add to Cart</button>
                 </div>

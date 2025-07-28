@@ -53,16 +53,26 @@
 
 .product-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+    justify-content: center;
 }
 
 .product-card {
+    width: 100%;
+    max-width: 300px;
+    height: 100%;
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     transition: box-shadow 0.3s;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+    margin: 0 auto;
 }
 
     .product-card:hover {
