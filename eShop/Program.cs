@@ -24,6 +24,8 @@ namespace eShop
 
             builder.Services.AddDistributedMemoryCache();
 
+            builder.Services.AddHttpContextAccessor();
+
             builder.Services.AddScoped<MemberService>();
             builder.Services.AddScoped<MemberRepository>();
 

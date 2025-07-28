@@ -16,5 +16,11 @@ namespace RepositoryLayer
         {
             return await _context.Members.ToListAsync();
         }
+
+        //Login Function --------------------------------------
+        public async Task<Member> Login(string email, string password)
+        {
+            return await _context.Members.FirstOrDefaultAsync(m => m.Email == email && m.Password == password);
+        }
     }
 }

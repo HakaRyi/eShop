@@ -1,0 +1,77 @@
+﻿@page "/login"
+@using Microsoft.EntityFrameworkCore
+@using ServiceLayer.DTO
+@using ServiceLayer
+
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Login</PageTitle>
+
+<h1>Login</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="LoginModel" OnValidSubmit="LoginHandle" FormName="login" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <InputText id="email" @bind-Value="LoginModel.Email" class="form-control" />
+                <ValidationMessage For="() => LoginModel.Email" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password:</label>
+                <InputText id="password" @bind-Value="LoginModel.Password" class="form-control" />
+                <ValidationMessage For="() => LoginModel.Password" class="text-danger" />
+            </div>
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+            <button type="submit" class="btn btn-primary">Login</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private LoginDTO LoginModel { get; set; } = new();
+
+    [Inject]
+    private MemberService MemberService { get; set; }
+
+    string errorMessage;
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task LoginHandle()
+    {
+        var result = await MemberService.Login(LoginModel.Email, LoginModel.Password);
+        if(result != null)
+        {
+            if (!result.Status)
+            {
+                errorMessage = "You do not have permission to do this function!";
+                return;
+            }
+            HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+            {
+                Expires = DateTimeOffset.Now.AddHours(3),
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Invalid Email or Password!";
+            return;
+        }
+    }
+}

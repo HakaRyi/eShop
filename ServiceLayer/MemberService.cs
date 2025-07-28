@@ -15,5 +15,10 @@ namespace ServiceLayer
         {
             return await _repo.GetAll();
         }
+
+        public async Task<Member> Login(string email, string password)
+        {
+            return await _repo.Login(email, password);
+        }
     }
 }

@@ -7,12 +7,30 @@
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
-@code{
-    [Inject]
-    private MemberService MemberService { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        var member = await MemberService.GetMembers(); // tùy vào hàm của bạn
-    }
+<NavLink href="login" 
+    style="
+    text-decoration: none;
+    position: absolute;
+    top: 10px;
+    right: 80px;
+    z-index: 999;
+">
+    <button style="
+            padding: 4px 24px;
+            font-size: 18px;
+            background-color: white;
+            color: #4facfe;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        "
+                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.25)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';">
+            Login
+    </button>
+</NavLink>
+
+@code{
 }
