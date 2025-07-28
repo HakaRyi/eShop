@@ -10,11 +10,9 @@ namespace BOs.Entities
 {
     public class OrderDetail
     {
-        public int OrderDetailId { get; set; }
-        [Key, Column(Order = 0)]
+        [Key]
+        public int OrderDetailId { get; set; }     
         public int OrderId { get; set; }
-
-        [Key, Column(Order = 1)]
         public int ProductId { get; set; }
 
         [Column(TypeName = "money")]
@@ -30,7 +28,6 @@ namespace BOs.Entities
         public virtual Order Order { get; set; } = null!;
 
         [ForeignKey("ProductId")]
-        [InverseProperty("OrderDetails")]
         public virtual Product Product { get; set; } = null!;
     }
 }

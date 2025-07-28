@@ -1,7 +1,77 @@
 ﻿@page "/"
+@using ServiceLayer
+@using ServiceLayer.DTO
+@inject ProductService ProductService
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<link href="css/home.css" rel="stylesheet" />
 
-Welcome to your new app.
+<div class="home-container">
+    <h1 class="title">Our Products</h1>
+
+    <div class="search-bar">
+        <input @bind="SearchTerm" class="search-input" placeholder="Search by product name" />
+        <select @bind="SelectedCategoryId" class="category-select">
+            <option value="">All Categories</option>
+            @if (Categories != null)
+            {
+                @foreach (var category in Categories)
+                {
+                    <option value="@category.CategoryId">@category.CategoryName</option>
+                }
+            }
+            else
+            {
+                <option disabled>Loading categories...</option>
+            }
+        </select>
+        <button @onclick="SearchProducts" class="search-button">Search</button>
+    </div>
+
+    @if (Products == null)
+    {
+        <p class="status-message">Loading...</p>
+    }
+    else if (!Products.Any())
+    {
+        <p class="status-message">No products found.</p>
+    }
+    else
+    {
+        <div class="product-list">
+            @foreach (var product in Products)
+            {
+                <div class="product-card">
+                    <h4>@product.ProductName</h4>
+                    <p>💰 Price: <strong>@product.UnitPrice.ToString("C")</strong></p>
+                    <p>🏷️ Category: @product.CategoryName</p>
+                    <button @onclick="() => AddToCart(product)" class="add-button">Add to Cart</button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<ProductDTO> Products { get; set; } = new();
+    private List<CategoryDTO> Categories { get; set; } = new();
+    private string SearchTerm { get; set; }
+    private int? SelectedCategoryId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Products = await ProductService.GetAllProductsAsync();
+        Categories = await ProductService.GetCategoriesAsync();
+    }
+
+    private async Task SearchProducts()
+    {
+        Products = await ProductService.GetAllProductsAsync(SearchTerm, SelectedCategoryId);
+    }
+
+    private void AddToCart(ProductDTO product)
+    {
+        // TODO: Add to cart logic
+    }
+}

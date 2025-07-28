@@ -16,17 +16,34 @@ namespace eShop
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
-            builder.Services.AddSession();
+
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<EShopContext>(options =>
                 options.UseSqlServer(connectionString));
+
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddScoped<MemberService>();
             builder.Services.AddScoped<MemberRepository>();
+            builder.Services.AddScoped<ProductService>();
+            builder.Services.AddScoped<ProductRepository>();
+            builder.Services.AddScoped<OrderRepository>();
+            builder.Services.AddScoped<OrderService>();
+                
 
             var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<EShopContext>();
+                context.Database.EnsureCreated();
+                Console.WriteLine("EnsureCreated called from Program.cs");
+            }
 
-            
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
