@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace ServiceLayer.DTO
 {
-    public class MemberDTO
+    public class CategoryDTO
     {
-        public int MemberId { get; set; }
-        public string Email { get; set; }
-        public bool Status { get; set; }
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; }
     }
 }

@@ -1,23 +1,14 @@
 ﻿using BOs.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace BOs
+namespace RepositoryLayer
 {
     public class EShopContext : DbContext
     {
         public EShopContext(DbContextOptions<EShopContext> options) : base(options)
         {
 
-            Console.WriteLine("EShopContext initialized");
-            try
-            {
-                Database.EnsureCreated();
-                Console.WriteLine("Database.EnsureCreated executed");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in EnsureCreated: {ex.Message}");
-            }
+            this.Database.EnsureCreated();
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,10 +25,9 @@ namespace BOs
                 .HasOne(o => o.Member)
                 .WithMany(m => m.Orders)
                 .HasForeignKey(o => o.MemberId);
-
-            // Order - OrderDetail (1-n)
-            modelBuilder.Entity<OrderDetail>()
-                .HasKey(od => new { od.OrderId, od.ProductId });
+            modelBuilder.Entity<Order>()
+                .Property(o => o.Status)
+                .HasDefaultValue(OrderStatus.Pending);
 
             modelBuilder.Entity<OrderDetail>()
                 .HasOne(od => od.Order)

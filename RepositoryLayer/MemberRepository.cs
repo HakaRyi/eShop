@@ -65,5 +65,10 @@ namespace RepositoryLayer
             await _context.SaveChangesAsync();
             return member;
         }
+        //Get Member by Email
+        public async Task<Member?> GetMemberByEmailAsync(string email)
+        {
+            return await _context.Members.FirstOrDefaultAsync(m => m.Email == email);
+        }
     }
 }

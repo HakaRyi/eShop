@@ -2,7 +2,6 @@
 @using Microsoft.EntityFrameworkCore
 @using ServiceLayer.DTO
 @using ServiceLayer
-
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -73,14 +72,17 @@
                 errorMessage = "You do not have permission to do this function!";
                 return;
             }
-            HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
-            {
-                Expires = DateTimeOffset.Now.AddHours(3),
-                HttpOnly = false,
-                Secure = true,
-                SameSite = SameSiteMode.Strict
-            });
-            NavigationManager.NavigateTo("/");
+            else
+             {
+             HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+             {
+                 Expires = DateTimeOffset.Now.AddHours(3),
+                 HttpOnly = false,
+                 Secure = true,
+                 SameSite = SameSiteMode.Strict
+             });
+             NavigationManager.NavigateTo("/");
+            }
         }
         else
         {
@@ -88,6 +90,4 @@
             return;
         }
     }
-
-
 }

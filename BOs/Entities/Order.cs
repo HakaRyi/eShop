@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 
 namespace BOs.Entities
 {
+    public enum OrderStatus
+    {
+        Pending=0,    
+        Success=1    
+    }
     public class Order
     {
         [Key]
@@ -21,6 +26,7 @@ namespace BOs.Entities
         public DateTime OrderDate { get; set; }
 
         [Column(TypeName = "datetime")]
+        [CustomValidation(typeof(Order), "ValidateRequiredDate")]
         public DateTime? RequiredDate { get; set; }
 
         [Column(TypeName = "datetime")]
@@ -28,7 +34,8 @@ namespace BOs.Entities
 
         [Column(TypeName = "money")]
         public decimal? Freight { get; set; }
-
+        [Column("Status")]
+        public OrderStatus Status { get; set; }
         // Navigation property
         [ForeignKey("MemberId")]
         [InverseProperty("Orders")]
@@ -39,6 +46,15 @@ namespace BOs.Entities
 
         [InverseProperty("Order")]
         public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+
+        public static ValidationResult ValidateRequiredDate(DateTime? requiredDate, ValidationContext context)
+        {
+            if (requiredDate.HasValue && requiredDate.Value < DateTime.Today)
+            {
+                return new ValidationResult("Required delivery date cannot be in the past.", new[] { nameof(RequiredDate) });
+            }
+            return ValidationResult.Success;
+        }
 
     }
 }
