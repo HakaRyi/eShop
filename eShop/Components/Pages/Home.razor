@@ -1,5 +1,8 @@
 ﻿@page "/"
 @using ServiceLayer
+@using BOs.Entities
+
+@inject IHttpContextAccessor HttpContextAccessor
 
 
 <PageTitle>Home</PageTitle>
@@ -8,29 +11,100 @@
 
 Welcome to your new app.
 
-<NavLink href="login" 
-    style="
-    text-decoration: none;
-    position: absolute;
-    top: 10px;
-    right: 80px;
-    z-index: 999;
-">
-    <button style="
-            padding: 4px 24px;
-            font-size: 18px;
-            background-color: white;
-            color: #4facfe;
-            border: none;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        "
+@if(userEmail == null)
+{
+    <NavLink href="login"
+             style="
+        text-decoration: none;
+        position: absolute;
+        top: 10px;
+        right: 80px;
+        z-index: 999;
+    ">
+        <button style="
+                padding: 4px 24px;
+                font-size: 18px;
+                background-color: white;
+                color: #4facfe;
+                border: none;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            "
                 onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.25)';"
                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';">
             Login
-    </button>
-</NavLink>
+        </button>
+    </NavLink>
+    <NavLink href="register"
+             style="
+        text-decoration: none;
+        position: absolute;
+        top: 10px;
+        right: 200px;
+        z-index: 999;
+    ">
+        <button style="
+                padding: 4px 24px;
+                font-size: 18px;
+                background-color: white;
+                color: darkorange;
+                border: none;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            "
+                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.25)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';">
+            Register
+        </button>
+    </NavLink>
+}
+else
+{
+    <NavLink href="profile"
+             style="
+            text-decoration: none;
+            position: absolute;
+            top: 10px;
+            right: 200px;
+            z-index: 999;
+        ">
+        <button style="
+                    padding: 4px 24px;
+                    font-size: 18px;
+                    background-color: white;
+                    color: darkorange;
+                    border: none;
+                    border-radius: 6px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                "
+                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.25)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';">
+            Profile
+        </button>
+    </NavLink>
+}
+
 
 @code{
+    private string userEmail;
+    private Member member;
+
+    [Inject]
+    private MemberService MemberService { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Lấy cookie "UserEmail" nếu có
+        if (HttpContextAccessor.HttpContext.Request.Cookies.TryGetValue("UserEmail", out var email))
+        {
+            userEmail = email;
+        }
+        else
+        {
+            userEmail = null; // hoặc default value
+        }
+    }
 }
