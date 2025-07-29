@@ -1,6 +1,7 @@
 ﻿@page "/cart"
 @using ServiceLayer
 @using ServiceLayer.DTO
+@using System.Globalization
 @inject OrderService OrderService
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
@@ -33,7 +34,7 @@
             @foreach (var detail in Order.OrderDetails)
             {
                 <div class="cart-item">
-                    <h4>@detail.ProductName - @detail.UnitPrice.ToString("C") x @detail.Quantity</h4>
+                    <h4>@detail.ProductName - @detail.UnitPrice.ToString("C", CultureInfo.GetCultureInfo("vi-VN")) x @detail.Quantity</h4>
                     <input type="number" @bind="detail.Quantity" @bind:event="oninput" @onchange="() => UpdateCart(detail)" min="1" class="quantity-input" />
                     <button @onclick="() => ConfirmRemove(detail.OrderDetailId)" class="remove-button">Remove</button>
                 </div>
@@ -45,7 +46,7 @@
                 {
                     <p class="error-message">@ErrorMessage</p>
                 }
-                <p>Shipping Fee: @(Order.Freight.HasValue ? Order.Freight.Value.ToString("C") : "Not calculated yet")</p>
+                <p>Shipping Fee: @(Order.Freight.HasValue ? Order.Freight.Value.ToString("C", CultureInfo.GetCultureInfo("vi-VN")) : "Not calculated yet")</p>
             </div>
             <div class="cart-total">
                 <p>Total: <strong>@((Order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity) + (Order.Freight ?? 0m)).ToString("C"))</strong></p>
@@ -64,7 +65,7 @@
             @foreach (var detail in OrderHistory)
             {
                 <div class="history-item">
-                    <h4>@detail.ProductName - @((detail.UnitPrice * detail.Quantity).ToString("C"))</h4>
+                    <h4>@detail.ProductName - @((detail.UnitPrice * detail.Quantity).ToString("C", CultureInfo.GetCultureInfo("vi-VN")))</h4>
                     <p>Order Date: @detail.OrderDate.ToString("dd/MM/yyyy") | Order ID: @detail.OrderId</p>
                 </div>
             }

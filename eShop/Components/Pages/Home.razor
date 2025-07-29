@@ -9,6 +9,7 @@
 @using ServiceLayer.DTO
 @inject ProductService ProductService
 @inject OrderService OrderService
+@using System.Globalization
 @using eShop
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
@@ -137,7 +138,7 @@ else
             {
                 <div class="product-card">
                     <h4>@product.ProductName</h4>
-                    <p>💰 Price: <span style="color: green"><strong>@product.UnitPrice.ToString("C")</strong></span></p>
+                    <p>💰 Price: <span style="color: green"><strong>@product.UnitPrice.ToString("C", CultureInfo.GetCultureInfo("vi-VN"))</strong></span></p>
                     <p>🏷️ Category: @product.CategoryName</p>
                     <button @onclick="() => AddToCart(product)" class="add-button">Add to Cart</button>
                 </div>
