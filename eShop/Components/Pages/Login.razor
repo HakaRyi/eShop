@@ -65,24 +65,39 @@
     private async Task LoginHandle()
     {
         var result = await MemberService.Login(LoginModel.Email, LoginModel.Password);
-        if(result != null)
+        if (result != null)
         {
             if (!result.Status)
             {
                 errorMessage = "You do not have permission to do this function!";
                 return;
             }
+        
+            var member = await MemberService.GetMemberByEmailAsync(LoginModel.Email);
+            if (member != null)
+            {
+           
+                HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddHours(3),
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                HttpContextAccessor.HttpContext.Response.Cookies.Append("MemberId", member.MemberId.ToString(), new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddHours(3),
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                NavigationManager.NavigateTo("/");
+            }
             else
             {
-                 HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
-                 {
-                     Expires = DateTimeOffset.Now.AddHours(3),
-                     HttpOnly = false,
-                     Secure = true,
-                     SameSite = SameSiteMode.Strict
-                 });
-                 NavigationManager.NavigateTo("/");
+                errorMessage = "Member not found!";
             }
+
         }
         else
         {
