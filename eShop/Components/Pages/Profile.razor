@@ -165,7 +165,7 @@ else
 
             <div class="card-body">
                 <p>
-                    <strong>Amount:</strong> <span class="text-success">@transaction.Amount.ToString("C")</span>
+                <strong>Amount:</strong> <span class="text-success">@transaction.Amount.ToString("C", CultureInfo.GetCultureInfo("vi-VN"))</span>
                 </p>
                 <p>
                     <strong>Payment Method:</strong> @transaction.PaymentMethod

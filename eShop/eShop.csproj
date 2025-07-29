@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ServiceLayer\ServiceLayer.csproj" />
+    <Compile Remove="Components\Pages\OrderPage\**" />
+    <Content Remove="Components\Pages\OrderPage\**" />
+    <EmbeddedResource Remove="Components\Pages\OrderPage\**" />
+    <None Remove="Components\Pages\OrderPage\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Pages\OrderPage\" />
+    <ProjectReference Include="..\ServiceLayer\ServiceLayer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +26,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="payOS" Version="1.0.9" />
   </ItemGroup>
 
 </Project>

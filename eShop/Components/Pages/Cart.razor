@@ -1,7 +1,9 @@
 ﻿@page "/cart"
 @using ServiceLayer
 @using ServiceLayer.DTO
+@using ServiceLayer.Services
 @using System.Globalization
+@inject PayOsPaymentService PayOsPaymentService
 @inject OrderService OrderService
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
@@ -50,7 +52,8 @@
             </div>
             <div class="cart-total">
                 <p>Total: <strong>@((Order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity) + (Order.Freight ?? 0m)).ToString("C"))</strong></p>
-                <button @onclick="Checkout" class="checkout-button">Checkout</button>
+                @* <button @onclick="Checkout" class="checkout-button">Checkout</button> *@
+                <button @onclick="PayWithPayOS" class="checkout-button">Checkout</button>
             </div>
         </div>
     }
@@ -184,4 +187,42 @@
             Console.WriteLine($"[OrderHistory] ❌ Exception: {ex}");
         }
     }
+
+    private async Task PayWithPayOS()
+    {
+        if (Order == null || !Order.OrderDetails.Any())
+        {
+            ErrorMessage = "No product in cart.";
+            return;
+        }
+
+        if (SelectedRequiredDate.HasValue && SelectedRequiredDate.Value < DateTime.Today)
+        {
+            ErrorMessage = "Required delivery date cannot be in the past.";
+            StateHasChanged();
+            return;
+        }
+
+        await OrderService.CheckoutAsync(Order.OrderId, SelectedRequiredDate);
+        await OrderService.UpdateRequiredDateAsync(Order.OrderId, SelectedRequiredDate);
+
+
+        try
+        {
+            // Tính tổng đơn hàng + phí ship
+            decimal subtotal = Order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
+            decimal shippingFee = Order.Freight ?? 0;
+            decimal total = subtotal + shippingFee;
+
+            var returnUrl = NavigationManager.BaseUri + "order-success"; // Trang callback sau thanh toán
+            var checkoutUrl = await PayOsPaymentService.CreatePaymentUrlAsync(Order.OrderId, total, returnUrl);
+
+            NavigationManager.NavigateTo(checkoutUrl, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Lỗi khi tạo thanh toán: " + ex.Message;
+        }
+    }
+
 }

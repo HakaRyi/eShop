@@ -1,0 +1,43 @@
+﻿@page "/order-success"
+@using ServiceLayer
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject ServiceLayer.TransactionService TransactionService
+@inject OrderService OrderService
+
+<h3>Thanh toán thành công!</h3>
+<p>Đơn hàng của bạn đã được thanh toán thành công.</p>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "orderId")]
+    public int OrderId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "amount")]
+    public decimal Amount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (OrderId == 0 || Amount <= 0)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        string note = "Thanh toán Đơn hàng";
+
+        try
+        {
+            // ✅ 1. Tạo transaction
+            await TransactionService.CreateTransactionAsync(OrderId, Amount, note);
+
+            // ✅ 2. Cập nhật trạng thái đơn hàng
+            await OrderService.MarkOrderAsPaidAsync(OrderId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Lỗi xử lý thanh toán: " + ex.Message);
+        }
+    }
+}

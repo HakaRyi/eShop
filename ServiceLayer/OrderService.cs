@@ -81,15 +81,10 @@ namespace ServiceLayer
                 throw new ArgumentException($"Order with ID {orderId} not found.");
             }
 
-         
             decimal total = order.OrderDetails.Sum(od => od.UnitPrice * od.Quantity);
             order.Freight = total * 0.1m > 5m ? total * 0.1m : 5m;
 
-         
-            order.RequiredDate = requiredDate;
-
-            
-            await _orderRepository.UpdateOrderStatusAsync(orderId, OrderStatus.Success);
+            //await _orderRepository.UpdateOrderStatusAsync(orderId, OrderStatus.Success);
         }
         public async Task<List<OrderDetailDTO>> GetOrderHistoryByMemberIdAsync(int memberId)
         {
@@ -131,6 +126,20 @@ namespace ServiceLayer
                 }).ToList()
             };
         }
+        public async Task MarkOrderAsPaidAsync(int orderId)
+        {
+            await _orderRepository.UpdateOrderStatusAsync(orderId, OrderStatus.Success);
+        }
+        public async Task UpdateRequiredDateAsync(int orderId, DateTime? requiredDate)
+        {
+            var order = await _orderRepository.FindOrderByIdAsync(orderId);
+            if (order != null)
+            {
+                order.RequiredDate = requiredDate;
+                await _orderRepository.UpdateOrderAsync(order);
+            }
+        }
+
 
     }
 }

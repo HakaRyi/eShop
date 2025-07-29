@@ -32,6 +32,13 @@ namespace BOs.Entities
         [StringLength(255)]
         public string? Note { get; set; }
 
+        [Column("MemberId")]
+        public int? MemberId { get; set; }  // Cho phép null nếu cần
+
+        [ForeignKey("MemberId")]
+        public virtual Member? Member { get; set; } // nếu có bảng Member, tạo mối quan hệ
+
+
         // Quan hệ: mỗi transaction gắn với một order
         [ForeignKey("OrderId")]
         [InverseProperty("Transactions")]

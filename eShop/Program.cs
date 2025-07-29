@@ -4,6 +4,8 @@ using eShop.Components;
 using Microsoft.EntityFrameworkCore;
 using RepositoryLayer;
 using ServiceLayer;
+using ServiceLayer.Services;
+using ServiceLayer.Settings;
 
 namespace eShop
 {
@@ -23,6 +25,8 @@ namespace eShop
                 options.Cookie.HttpOnly = true; 
                 options.Cookie.IsEssential = true; 
             });
+            builder.Services.Configure<PayOsSettings>(
+                builder.Configuration.GetSection("PayOs"));
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<EShopContext>(options =>
@@ -38,6 +42,10 @@ namespace eShop
             builder.Services.AddScoped<ProductRepository>();
             builder.Services.AddScoped<OrderRepository>();
             builder.Services.AddScoped<OrderService>();
+            builder.Services.AddScoped<PayOsPaymentService>();
+            builder.Services.AddScoped<ITransactionRepository,TransactionRepository>();
+            builder.Services.AddScoped<TransactionService>();
+
 
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
@@ -79,6 +87,7 @@ namespace eShop
             app.UseHttpsRedirection();
            
             app.UseStaticFiles();
+            app.UseRouting();
             app.UseAntiforgery();
             app.UseSession();
             app.MapRazorComponents<App>()
