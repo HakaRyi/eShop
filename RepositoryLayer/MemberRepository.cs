@@ -1,5 +1,4 @@
-﻿using BOs;
-using BOs.Entities;
+﻿using BOs.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace RepositoryLayer
@@ -25,11 +24,19 @@ namespace RepositoryLayer
         public async Task<Member> Login(string email, string password)
         {
             var isExist = await GetByEmail(email);
-            bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(password, isExist.Password);
-            if (!isPasswordCorrect)
+            try
+            {
+                bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(password, isExist.Password);
+                if (!isPasswordCorrect)
+                {
+                    return null;
+                }
+            }
+            catch (Exception e)
             {
                 return null;
             }
+
             return isExist;
         }
 
@@ -46,6 +53,8 @@ namespace RepositoryLayer
             return await _context.Members
                 .Include(x => x.Transactions)
                 .Include(x => x.Orders)
+                    .ThenInclude(o => o.OrderDetails)
+                        .ThenInclude(od => od.Product)
                 .Include(x => x.Feedbacks)
                 .FirstOrDefaultAsync(m => m.Email == email);
         }

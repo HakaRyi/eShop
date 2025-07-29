@@ -64,30 +64,33 @@
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task LoginHandle()
     {
-        var result = await MemberService.Login(LoginModel.Email, LoginModel.Password);
-        if(result != null)
-        {
-            if (!result.Status)
+            var result = await MemberService.Login(LoginModel.Email, LoginModel.Password);
+            if (result != null)
             {
-                errorMessage = "You do not have permission to do this function!";
-                return;
+                if (!result.Status)
+                {
+                    errorMessage = "You do not have permission to do this function!";
+                    return;
+                }
+                else
+                {
+                    HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddHours(3),
+                        HttpOnly = false,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                    await Task.Delay(10); // nhẹ để đợi UI ổn định
+                    NavigationManager.NavigateTo("/");
+                }
             }
             else
             {
-                 HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
-                 {
-                     Expires = DateTimeOffset.Now.AddHours(3),
-                     HttpOnly = false,
-                     Secure = true,
-                     SameSite = SameSiteMode.Strict
-                 });
-                 NavigationManager.NavigateTo("/");
+                errorMessage = "Invalid Email or Password!";
+                return;
             }
         }
-        else
-        {
-            errorMessage = "Invalid Email or Password!";
-            return;
-        }
+
     }
 }
