@@ -4,6 +4,7 @@
 @using ServiceLayer
 @using BOs.Entities
 @using ServiceLayer.DTO
+@using System.Globalization
 
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
@@ -61,103 +62,139 @@ else
         </EditForm>
     </div>
 
+    <h3 class="mb-0">My Orders</h3>
 
+    @foreach (var order in PagedOrders)
+    {
+        <div class="card mb-3 shadow-sm border-primary">
+            <div class="card-header bg-primary text-white d-flex justify-content-between">
+                <div>
+                    <strong>Order Date:</strong> @order.OrderDate.ToString("yyyy-MM-dd")
+                </div>
+                <div>
+                    <strong>Status:</strong> @order.Status
+                </div>
+            </div>
 
-    @* <div class="card mb-4">
-        <div class="card-header">
-            <strong>Orders</strong>
-        </div>
-        <div class="card-body p-0">
-            @if (profile.Orders.Any())
-            {
-                <table class="table mb-0">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Total Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var o in profile.Orders)
+            <div class="card-body">
+                <h6 class="card-title mb-3">Products</h6>
+                @{
+                    decimal totalAmount = 0;
+                }
+                @if (order.OrderDetails != null && order.OrderDetails.Any())
+                {
+                    <ul class="list-group mb-3">
+                        @foreach (var detail in order.OrderDetails)
                         {
-                            <tr>
-                                <td>@o.OrderId</td>
-                                <td>@o.OrderDate.ToString("yyyy-MM-dd")</td>
-                                <td>@o.TotalAmount.ToString("C")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-            else
-            {
-                <p class="m-3">No orders found.</p>
-            }
-        </div>
-    </div>
+                            var itemTotal = detail.Quantity * detail.UnitPrice;
+                            totalAmount += itemTotal;
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <strong>Feedbacks</strong>
-        </div>
-        <div class="card-body p-0">
-            @if (profile.Feedbacks.Any())
-            {
-                <ul class="list-group list-group-flush">
-                    @foreach (var f in profile.Feedbacks)
-                    {
-                        <li class="list-group-item">
-                            <div><strong>Product ID:</strong> @f.ProductId</div>
-                            <div><strong>Rating:</strong> @f.Rates / 5</div>
-                            <div><strong>Comment:</strong> @f.Description</div>
-                            <div class="text-muted small">@f.CreatedAt.ToString("yyyy-MM-dd")</div>
-                        </li>
-                    }
-                </ul>
-            }
-            else
-            {
-                <p class="m-3">No feedbacks submitted.</p>
-            }
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-header">
-            <strong>Transactions</strong>
-        </div>
-        <div class="card-body p-0">
-            @if (profile.Transactions.Any())
-            {
-                <table class="table mb-0">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>Transaction ID</th>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var t in profile.Transactions)
-                        {
-                            <tr>
-                                <td>@t.TransactionId</td>
-                                <td>@t.TransactionDate.ToString("yyyy-MM-dd")</td>
-                                <td>@t.Amount.ToString("C")</td>
-                                <td>@t.Description</td>
-                            </tr>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@detail.Product.ProductName</strong>
+                                    <br />
+                                    Quantity: @detail.Quantity × @detail.UnitPrice.ToString("C", CultureInfo.GetCultureInfo("vi-VN"))
+                                </div>
+                                <span class="text-end fw-bold">
+                                    @(itemTotal.ToString("C", CultureInfo.GetCultureInfo("vi-VN")))
+                                </span>
+                            </li>
                         }
-                    </tbody>
-                </table>
-            }
-            else
-            {
-                <p class="m-3">No transactions recorded.</p>
-            }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">No products in this order.</p>
+                }
+
+                <div class="text-end">
+                    <strong>Total:</strong>
+                    <span class="fs-5 text-success fw-bold">
+                        @(totalAmount.ToString("C", CultureInfo.GetCultureInfo("vi-VN")))
+                    </span>
+                </div>
+            </div>
         </div>
-    </div> *@
+    }
+    <nav class="d-flex justify-content-center mt-3">
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)">Previous</button>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                var pageNumber = i;
+                <li class="page-item @(currentPage == pageNumber ? "active" : "")">
+                    <button class="page-link" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)">Next</button>
+            </li>
+        </ul>
+    </nav>
+
+    <h3 class="mb-0">Transaction History</h3>
+
+@functions {
+    private string GetHeaderClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "pending" => "bg-secondary",
+            "failed" => "bg-warning",
+            "completed" => "bg-success bg-opacity-50",
+            _ => "bg-light"
+        };
+    }
+}
+
+@foreach (var transaction in pagedTransactions)
+    {
+        <div class="card mb-3 shadow-sm border-secondary">
+            <div class="card-header text-white d-flex justify-content-between @GetHeaderClass(transaction.Status)">
+                <div>
+                    <strong>Transaction Date:</strong> @transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")
+                </div>
+                <div>
+                    <strong>Status:</strong> @transaction.Status
+                </div>
+            </div>
+
+            <div class="card-body">
+                <p>
+                    <strong>Amount:</strong> <span class="text-success">@transaction.Amount.ToString("C")</span>
+                </p>
+                <p>
+                    <strong>Payment Method:</strong> @transaction.PaymentMethod
+                </p>
+                <p>
+                    <strong>Note:</strong> @(string.IsNullOrWhiteSpace(transaction.Note) ? "—" : transaction.Note)
+                </p>
+            </div>
+        </div>
+    }
+    <nav class="d-flex justify-content-center mt-3">
+    <ul class="pagination">
+        <li class="page-item @(transactionPage == 1 ? "disabled" : "")">
+            <button class="page-link" @onclick="() => ChangeTransactionPage(transactionPage - 1)">Previous</button>
+        </li>
+
+        @for (int i = 1; i <= totalTransactionPages; i++)
+        {
+            var pageIndex = i; // fix closure bug
+            <li class="page-item @(transactionPage == pageIndex ? "active" : "")">
+                                   <button class="page-link" @onclick="() => ChangeTransactionPage(pageIndex)">@pageIndex</button>
+            </li>
+        }
+
+        <li class="page-item @(transactionPage == totalTransactionPages ? "disabled" : "")">
+            <button class="page-link" @onclick="() => ChangeTransactionPage(transactionPage + 1)">Next</button>
+        </li>
+    </ul>
+</nav>
 }
 
 <script>
@@ -175,6 +212,43 @@ else
 
     string errorMessage;
 
+    // Paging Here: =(((
+    private int currentPage = 1;
+    private int pageSize = 3;
+    private int totalPages => (int)Math.Ceiling((decimal)(profile?.Orders?.Count() ?? 0) / pageSize);
+
+    private IEnumerable<Order> PagedOrders =>
+        profile?.Orders?
+            .OrderByDescending(o => o.OrderDate) // hoặc OrderID tùy bạn
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+        ?? Enumerable.Empty<Order>();
+
+    private void ChangePage(int newPage)
+    {
+        if (newPage >= 1 && newPage <= totalPages)
+        {
+            currentPage = newPage;
+        }
+    }
+
+    private int transactionPage = 1;
+    private int transactionPageSize = 3;
+    private int totalTransactionPages => (int)Math.Ceiling((double)profile.Transactions.Count / transactionPageSize);
+
+    private IEnumerable<Transaction> pagedTransactions =>
+            profile.Transactions
+                .Skip((transactionPage - 1) * transactionPageSize)
+                .Take(transactionPageSize);
+
+     private void ChangeTransactionPage(int page)
+    {
+        if (page >= 1 && page <= totalTransactionPages)
+        {
+            transactionPage = page;
+        }
+    }
+    //End Paging
     protected override async Task OnInitializedAsync()
     {
         if (HttpContextAccessor.HttpContext.Request.Cookies.TryGetValue("UserEmail", out var email))
@@ -216,9 +290,5 @@ else
     {
         await JS.InvokeVoidAsync("deleteCookie", "UserEmail");
         NavigationManager.NavigateTo("/", forceLoad: true);
-    }
-    private void TestClick()
-    {
-        Console.WriteLine("Clicked!"); 
     }
 }

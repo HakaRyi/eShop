@@ -64,13 +64,31 @@
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task LoginHandle()
     {
+
+
         var result = await MemberService.Login(LoginModel.Email, LoginModel.Password);
         if (result != null)
         {
             if (!result.Status)
+
             {
-                errorMessage = "You do not have permission to do this function!";
-                return;
+                if (!result.Status)
+                {
+                    errorMessage = "You do not have permission to do this function!";
+                    return;
+                }
+                else
+                {
+                    HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddHours(3),
+                        HttpOnly = false,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                    await Task.Delay(10); // nhẹ để đợi UI ổn định
+                    NavigationManager.NavigateTo("/");
+                }
             }
         
             var member = await MemberService.GetMemberByEmailAsync(LoginModel.Email);
@@ -80,14 +98,14 @@
                 HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
                     {
                         Expires = DateTimeOffset.Now.AddHours(3),
-                        HttpOnly = true,
+                        HttpOnly = false,
                         Secure = true,
                         SameSite = SameSiteMode.Strict
                     });
                 HttpContextAccessor.HttpContext.Response.Cookies.Append("MemberId", member.MemberId.ToString(), new CookieOptions
                     {
                         Expires = DateTimeOffset.Now.AddHours(3),
-                        HttpOnly = true,
+                        HttpOnly = false,
                         Secure = true,
                         SameSite = SameSiteMode.Strict
                     });
@@ -95,14 +113,12 @@
             }
             else
             {
-                errorMessage = "Member not found!";
+                errorMessage = "Invalid Email or Password!";
+                return;
+
             }
 
         }
-        else
-        {
-            errorMessage = "Invalid Email or Password!";
-            return;
-        }
+
     }
 }
