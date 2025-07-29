@@ -1,0 +1,128 @@
+﻿@page "/register"
+@using Microsoft.EntityFrameworkCore
+@using ServiceLayer.DTO
+@using ServiceLayer
+
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+<link href="css/Register.css" rel="stylesheet" />
+<div class="cont">
+    <EditForm method="post" Model="RegisterModel" OnValidSubmit="RegisterHandle" FormName="register" Enhance class="form sign-up">
+        <h2>Create your Account</h2>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label for="register-email" class="form-label">Email:</label>
+            <InputText id="register-email" @bind-Value="RegisterModel.Email" class="form-control" />
+            <ValidationMessage For="() => RegisterModel.Email" class="text-danger" />
+        </div>
+        <div>
+            <label for="register-password" class="form-label">Password:</label>
+            <InputText id="register-password" @bind-Value="RegisterModel.Password" class="form-control" />
+            <ValidationMessage For="() => RegisterModel.Password" class="text-danger" />
+        </div>
+
+        <div>
+            <label for="confirm_password" class="form-label">Confirm Password:</label>
+            <InputText id="confirm_password" @bind-Value="RegisterModel.ConfirmPassword" class="form-control" />
+            <ValidationMessage For="() => RegisterModel.ConfirmPassword" class="text-danger" />
+        </div>
+
+        <div>
+            <label for="companyName" class="form-label">Company Name:</label>
+            <InputText id="companyName" @bind-Value="RegisterModel.CompanyName" class="form-control" />
+            <ValidationMessage For="() => RegisterModel.CompanyName" class="text-danger" />
+        </div>
+
+        <div>
+            <label for="city" class="form-label">City:</label>
+            <InputText id="city" @bind-Value="RegisterModel.City" class="form-control" />
+            <ValidationMessage For="() => RegisterModel.City" class="text-danger" />
+        </div>
+
+        <div>
+            <label for="country" class="form-label">Country:</label>
+            <InputText id="country" @bind-Value="RegisterModel.Country" class="form-control" />
+            <ValidationMessage For="() => RegisterModel.Country" class="text-danger" />
+        </div>
+        @if (!string.IsNullOrWhiteSpace(registerError))
+        {
+            <div class="alert alert-danger">@registerError</div>
+        }
+    <button type="submit" class="submit btn-signup">Sign Up</button>
+    </EditForm>
+    <div class="sub-cont">
+        <div class="img">
+            <div class="img__text m--in">
+                <p>If you already has an account, just sign in.</p>
+            </div>
+            <NavLink class="img__btn" href="/login" style="display: block; text-align: center; text-decoration:none; line-height: 35px">
+                <div class="m--up">Sign In</div>
+            </NavLink>
+        </div>
+    </div>
+    @if (registeredSuccessfully)
+    {
+        <meta http-equiv="refresh" content="3;url=/login" />
+        <div class="alert alert-success mt-3">
+            Đăng ký thành công! Chuyển đến trang đăng nhập sau 3 giây...
+        </div>
+    }
+</div>
+
+
+@code {
+    [SupplyParameterFromForm]
+    private RegisterDTO RegisterModel { get; set; } = new();
+
+    [Inject]
+    private MemberService MemberService { get; set; }
+
+    string registerError;
+    private bool registeredSuccessfully = false;
+
+    private bool _disposed;
+
+    protected override void OnInitialized()
+    {
+        _disposed = false;
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+    }
+
+    private async Task RegisterHandle()
+    {
+        var isExist = await MemberService.isExistByEmail(RegisterModel.Email);
+        if (!isExist)
+        {
+            try
+            {
+                var result  = await MemberService.Register(RegisterModel);
+                if (result)
+                {
+                    registeredSuccessfully = true;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                registerError = "Fail to Register";
+            }
+        }
+        else
+        {
+            registerError = "The EMAIL have been exist!";
+            return;
+        }
+    }
+
+    private void NavigateLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}

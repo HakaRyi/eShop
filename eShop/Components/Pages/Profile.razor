@@ -1,0 +1,224 @@
+﻿@page "/profile"
+@rendermode InteractiveServer
+
+@using ServiceLayer
+@using BOs.Entities
+@using ServiceLayer.DTO
+
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JS
+
+
+<PageTitle>User Profile</PageTitle>
+<link href="css/Profile.css" rel="stylesheet" />
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">My Profile</h2>
+    <button class="btn btn-outline-danger btn-sm" @onclick=Logout>Logout</button>
+</div>
+
+@if (profile == null)
+{
+    <p>Loading profile...</p>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Account Information</strong>
+        </div>
+        <EditForm method="post" Model="EditModel" OnValidSubmit="EditHandle" FormName="edit" Enhance class="form sign-in">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <input type="hidden" name="Member.Id" value="@EditModel.MemberId" />
+            <div class="row mb-2">
+                <label class="col-sm-3 font-weight-bold" for="email" >Email:</label>
+                <InputText id="email" @bind-Value="EditModel.Email" class="col-sm-9" />
+                <ValidationMessage For="() => EditModel.Email" class="text-danger" />
+            </div>
+            <div class="row mb-2">
+                <label for="companyName" class="col-sm-3 font-weight-bold">Company Name:</label>
+                <InputText id="companyName" @bind-Value="EditModel.CompanyName" class="col-sm-9" />
+                <ValidationMessage For="() => EditModel.CompanyName" class="text-danger" />
+            </div>
+
+            <div class="row mb-2">
+                <label for="city" class="col-sm-3 font-weight-bold">City:</label>
+                <InputText id="city" @bind-Value="EditModel.City" class="col-sm-9" />
+                <ValidationMessage For="() => EditModel.City" class="text-danger" />
+            </div>
+
+            <div class="row mb-2">
+                <label for="country" class="col-sm-3 font-weight-bold">Country:</label>
+                <InputText id="country" @bind-Value="EditModel.Country" class="col-sm-9" />
+                <ValidationMessage For="() => EditModel.Country" class="text-danger" />
+            </div>
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+            <button type="submit" class="submit">Update</button>
+        </EditForm>
+    </div>
+
+
+
+    @* <div class="card mb-4">
+        <div class="card-header">
+            <strong>Orders</strong>
+        </div>
+        <div class="card-body p-0">
+            @if (profile.Orders.Any())
+            {
+                <table class="table mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var o in profile.Orders)
+                        {
+                            <tr>
+                                <td>@o.OrderId</td>
+                                <td>@o.OrderDate.ToString("yyyy-MM-dd")</td>
+                                <td>@o.TotalAmount.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="m-3">No orders found.</p>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Feedbacks</strong>
+        </div>
+        <div class="card-body p-0">
+            @if (profile.Feedbacks.Any())
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var f in profile.Feedbacks)
+                    {
+                        <li class="list-group-item">
+                            <div><strong>Product ID:</strong> @f.ProductId</div>
+                            <div><strong>Rating:</strong> @f.Rates / 5</div>
+                            <div><strong>Comment:</strong> @f.Description</div>
+                            <div class="text-muted small">@f.CreatedAt.ToString("yyyy-MM-dd")</div>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="m-3">No feedbacks submitted.</p>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Transactions</strong>
+        </div>
+        <div class="card-body p-0">
+            @if (profile.Transactions.Any())
+            {
+                <table class="table mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in profile.Transactions)
+                        {
+                            <tr>
+                                <td>@t.TransactionId</td>
+                                <td>@t.TransactionDate.ToString("yyyy-MM-dd")</td>
+                                <td>@t.Amount.ToString("C")</td>
+                                <td>@t.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="m-3">No transactions recorded.</p>
+            }
+        </div>
+    </div> *@
+}
+
+<script>
+    function deleteCookie(name) {
+        document.cookie = name + '=; Max-Age=0; path=/;';
+    }
+</script>
+
+@code {
+    [SupplyParameterFromForm]
+    private UpdateMemberDTO EditModel { get; set; } = new();
+    private Member profile;
+    [Inject]
+    private MemberService MemberService { get; set; }
+
+    string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContextAccessor.HttpContext.Request.Cookies.TryGetValue("UserEmail", out var email))
+        {
+            profile = await MemberService.GetByEmail(email);
+            EditModel.MemberId = profile.MemberId;
+            EditModel.Email = profile.Email;
+            EditModel.City = profile.City;
+            EditModel.CompanyName = profile.CompanyName;
+            EditModel.Country = profile.Country;
+        }
+        else
+        {
+            profile = null;
+        }
+    }
+
+    private async Task EditHandle()
+    {
+        var existMember = await MemberService.GetById(EditModel.MemberId);
+        var isEmailExist = false;
+        if(!(existMember.Email == EditModel.Email))
+        {
+            isEmailExist = await MemberService.isExistByEmail(EditModel.Email);
+        }
+
+        if (!isEmailExist)
+        {
+            await MemberService.Update(EditModel);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        else
+        {
+            errorMessage = "Email have been existed";
+        }
+    }
+
+    public async Task Logout()
+    {
+        await JS.InvokeVoidAsync("deleteCookie", "UserEmail");
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+    private void TestClick()
+    {
+        Console.WriteLine("Clicked!"); 
+    }
+}

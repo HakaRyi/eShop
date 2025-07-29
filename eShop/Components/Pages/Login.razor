@@ -7,32 +7,45 @@
 
 <PageTitle>Login</PageTitle>
 
-<h1>Login</h1>
-
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm method="post" Model="LoginModel" OnValidSubmit="LoginHandle" FormName="login" Enhance>
+<link href="css/AuthForm.css" rel="stylesheet" />
+<br>
+<br>
+    <div class="cont">
+        <EditForm method="post" Model="LoginModel" OnValidSubmit="LoginHandle" FormName="login" Enhance class="form sign-in">
+            <h2>Welcome</h2>
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
-            <div class="mb-3">
+            <div>
                 <label for="email" class="form-label">Email:</label>
                 <InputText id="email" @bind-Value="LoginModel.Email" class="form-control" />
                 <ValidationMessage For="() => LoginModel.Email" class="text-danger" />
             </div>
-            <div class="mb-3">
+            <div>
                 <label for="password" class="form-label">Password:</label>
-                <InputText id="password" @bind-Value="LoginModel.Password" class="form-control" />
+                <InputText id="password" @bind-Value="LoginModel.Password" class="form-control" type="password" />
                 <ValidationMessage For="() => LoginModel.Password" class="text-danger" />
             </div>
+                <p class="forgot-pass">Forgot password?</p>
             @if (!string.IsNullOrWhiteSpace(errorMessage))
             {
                 <div class="alert alert-danger">@errorMessage</div>
             }
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="submit">Login</button>
         </EditForm>
+
+         <div class="sub-cont">
+            <div class="img">
+                <div class="img__text m--up">                 
+                    <h3>Don't have an account? Please Sign up!</h3>
+                </div>
+                <NavLink class="img__btn" href="/register" style="display: block; text-align: center; text-decoration:none; line-height: 35px">
+                    <div class="m--up">Sign Up</div>
+                </NavLink>
+            </div>
+        </div> 
     </div>
-</div>
+
+@* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *@
 
 <div>
     <a href="/">Back to List</a>
@@ -46,6 +59,7 @@
     private MemberService MemberService { get; set; }
 
     string errorMessage;
+    string registerError;
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task LoginHandle()
@@ -58,32 +72,17 @@
                 errorMessage = "You do not have permission to do this function!";
                 return;
             }
-            // Lấy MemberID từ email
-            var member = await MemberService.GetMemberByEmailAsync(LoginModel.Email);
-            if (member != null)
-            {
-                // Lưu cả Email và MemberID vào cookie
-                HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
-                    {
-                        Expires = DateTimeOffset.Now.AddHours(3),
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict
-                    });
-                HttpContextAccessor.HttpContext.Response.Cookies.Append("MemberId", member.MemberId.ToString(), new CookieOptions
-                    {
-                        Expires = DateTimeOffset.Now.AddHours(3),
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict
-                    });
-                NavigationManager.NavigateTo("/");
-            }
             else
-            {
-                errorMessage = "Member not found!";
+             {
+             HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+             {
+                 Expires = DateTimeOffset.Now.AddHours(3),
+                 HttpOnly = false,
+                 Secure = true,
+                 SameSite = SameSiteMode.Strict
+             });
+             NavigationManager.NavigateTo("/");
             }
-           
         }
         else
         {
@@ -91,5 +90,4 @@
             return;
         }
     }
-    
 }

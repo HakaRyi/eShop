@@ -1,0 +1,118 @@
+﻿/* Card container */
+.card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Card header */
+.card-header {
+    background-color: #f8f9fa;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Form layout */
+form.form.sign-in {
+    padding: 16px;
+}
+
+/* Form rows */
+.row.mb-2 {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+/* Label styles */
+label {
+    font-weight: 600;
+    color: #333;
+    margin-top: 6px;
+    text-align: right;
+}
+
+/* Column widths */
+.col-sm-3 {
+    flex: 0 0 15%;
+    max-width: 15%;
+    padding-right: 8px;
+}
+
+.col-sm-9 {
+    flex: 0 0 85%;
+    max-width: 85%;
+}
+
+/* Input styles */
+input[type="text"],
+input[type="email"],
+input:not([type="hidden"]) {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+/* Validation messages */
+.text-danger {
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* Submit button */
+button.submit {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 12px 36px; /* rộng hơn */
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 20px auto 0; /* tự động căn giữa */
+    display: block; /* cần thiết để margin auto có tác dụng */
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    button.submit:hover {
+        background-color: #0056b3;
+    }
+
+/* Alert box */
+.alert.alert-danger {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    color: #721c24;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.logout-button {
+    padding: 6px 14px;
+    background-color: transparent;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .logout-button:hover {
+        background-color: #dc3545;
+        color: white;
+    }

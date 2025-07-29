@@ -1,0 +1,72 @@
+﻿.img__btn {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    line-height: 35px;
+    color: #4B3B2A;
+    background-color: #D2B48C;
+    border: 1px solid #C8AD7F;
+    border-radius: 6px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    /* Hover */
+    .img__btn:hover {
+        background-color: #A67B5B;
+        color: white;
+        border-color: #8C6142;
+    }
+
+    /* Text bên trong nút */
+    .img__btn .m--up {
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+.btn-signup {
+    display: block;
+    width: 100%;
+    margin: 5px auto;
+    background-color: #D2B48C;
+    color: #4B3B2A;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+}
+
+    .btn-signup:hover {
+        background-color: #A67B5B;
+        color: #F5F5DC;
+    }
+
+.img__text {
+    margin: 16px 0;
+    font-size: 16px;
+    text-align: center;
+    color: #4B3B2A;
+    opacity: 0.8;
+}
+
+.img__btn {
+    background-color: transparent;
+    color: #A67B5B;
+    border: 2px solid #A67B5B;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin: 12px auto;
+    width: 200px;
+}
+
+.img__btn {
+    background-color: #A67B5B;
+    color: #FAF3E0;
+}
