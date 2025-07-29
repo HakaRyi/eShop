@@ -15,34 +15,76 @@ namespace RepositoryLayer
         {
             _context = context;
         }
-        // Thêm các phương thức truy xuất dữ liệu sản phẩm tại đây
-        public async Task<List<Product>> GetAllProductsAsync()
-        {
-            return await _context.Products.Include(p=>p.Category).ToListAsync();
-        }
+        //public async Task<List<Product>> GetAllProductsAsync()
+        //{
+        //    return await _context.Products.Include(p=>p.Category).ToListAsync();
+        //}
         public async Task<Product?> GetProductByIdAsync(int productId)
         {
             return await _context.Products.
                 Include(p => p.Category).
-                FirstOrDefaultAsync(p=>p.ProductId==productId);
+                FirstOrDefaultAsync(p => p.ProductId == productId);
         }
-        public async Task<List<Product>> GetProductsAsync(string search = null, int? categoryId = null)
+        public async Task<List<Product>> GetAllProductsAsync(string search = null, int? categoryId = null)
         {
             var query = _context.Products
                 .Include(p => p.Category)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(search))
+
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(p => p.ProductName.Contains(search));
+                query = query.Where(p => p.ProductName.ToLower().Contains(search.Trim().ToLower()));
             }
+
 
             if (categoryId.HasValue)
             {
                 query = query.Where(p => p.CategoryId == categoryId.Value);
             }
 
+
+            if (string.IsNullOrWhiteSpace(search) && !categoryId.HasValue)
+            {
+                query = query.OrderByDescending(p => p.ProductId);
+            }
+
             return await query.ToListAsync();
+        }
+        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(
+    string search = null, int? categoryId = null, int pageIndex = 1, int pageSize = 9)
+        {
+            var query = _context.Products.Include(p => p.Category).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var trimmedSearch = search.Trim().ToLower();
+                if (decimal.TryParse(trimmedSearch, out decimal parsedPrice))
+                {
+                    query = query.Where(p =>
+                        p.ProductName.ToLower().Contains(trimmedSearch)
+                        || p.UnitPrice == parsedPrice
+                    );
+                }
+                else
+                {
+                    query = query.Where(p =>
+                        p.ProductName.ToLower().Contains(trimmedSearch)
+                    );
+                }
+            }
+            if (categoryId.HasValue)
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+
+            int totalCount = await query.CountAsync();
+
+            var products = await query
+                .OrderByDescending(p => p.ProductId)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (products, totalCount);
         }
         public async Task AddProductAsync(Product product)
         {

@@ -2,17 +2,50 @@
 @using ServiceLayer
 @using ServiceLayer.DTO
 @inject ProductService ProductService
-
+@using eShop
+@rendermode InteractiveServer
 <PageTitle>Home</PageTitle>
 
 <link href="css/home.css" rel="stylesheet" />
+@* @if (!string.IsNullOrEmpty(ErrorMessage)) *@
+@* { *@
+@*     <p style="color: red">@ErrorMessage</p> *@
+@* } *@
 
+<NavLink href="login"
+         style="
+    text-decoration: none;
+    position: absolute;
+    top: 10px;
+    right: 80px;
+    z-index: 999;
+">
+    <button style="
+            padding: 4px 24px;
+            font-size: 18px;
+            background-color: white;
+            color: #4facfe;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        "
+            onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.25)';"
+            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';">
+        Login
+    </button>
+</NavLink>
 <div class="home-container">
-    <h1 class="title">Our Products</h1>
+    <h1 class="title">EStore Products</h1>
 
     <div class="search-bar">
-        <input @bind="SearchTerm" class="search-input" placeholder="Search by product name" />
-        <select @bind="SelectedCategoryId" class="category-select">
+        <input class="search-input"
+               placeholder="Search by product name"
+               value="@SearchTerm"
+               @oninput="OnSearchInputChanged"
+               @onkeydown="HandleKeyPress" />
+
+        <select class="category-select" @onchange="OnCategoryChanged">
             <option value="">All Categories</option>
             @if (Categories != null)
             {
@@ -26,7 +59,8 @@
                 <option disabled>Loading categories...</option>
             }
         </select>
-        <button @onclick="SearchProducts" class="search-button">Search</button>
+
+        @* <button class="btn btn-primary" @onclick="SearchProducts">Search</button> *@
     </div>
 
     @if (Products == null)
@@ -52,26 +86,112 @@
         </div>
     }
 </div>
-
+@if (TotalPages > 1)
+{
+    <nav aria-label="Page navigation" class="mt-4 text-center">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="PrevPage">Previous</button>
+            </li>
+            @for (int i = 1; i <= TotalPages; i++)
+            {
+                var pageNumber = i;
+                <!-- tạo biến tạm -->
+                <li class="page-item @(pageNumber == CurrentPage ? "active" : "")">
+                    <button class="page-link" @onclick="() => GoToPage(pageNumber)">@pageNumber</button>
+                </li>
+            }
+            <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                <button class="page-link" @onclick="NextPage">Next</button>
+            </li>
+        </ul>
+    </nav>
+}
 @code {
     private List<ProductDTO> Products { get; set; } = new();
     private List<CategoryDTO> Categories { get; set; } = new();
     private string SearchTerm { get; set; }
     private int? SelectedCategoryId { get; set; }
-
+    private DateTime _lastSearchTime = DateTime.MinValue;
+    private string ErrorMessage;
+    private int PageSize = 9;
+    private int CurrentPage = 1;
+    private int TotalPages = 1;
     protected override async Task OnInitializedAsync()
     {
-        Products = await ProductService.GetAllProductsAsync();
+        await LoadProducts();
         Categories = await ProductService.GetCategoriesAsync();
     }
-
+    private async Task LoadProducts()
+    {
+        try
+        {
+            var response = await ProductService.GetPagedProductsAsync(SearchTerm, SelectedCategoryId, CurrentPage, PageSize);
+            Products = response.Products;
+            TotalPages = response.TotalPages;
+            CurrentPage = response.PageIndex;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "An error occurred while loading products.";
+            Console.WriteLine($"[Paging] ❌ Exception: {ex}");
+        }
+    }
     private async Task SearchProducts()
     {
-        Products = await ProductService.GetAllProductsAsync(SearchTerm, SelectedCategoryId);
+        CurrentPage = 1;
+        await LoadProducts();
     }
+    private async Task OnSearchInputChanged(ChangeEventArgs e)
+    {
+        SearchTerm = e.Value?.ToString();
+        Console.WriteLine($"[Input] Changed to: {SearchTerm}");
+        await SearchProducts();
+    }
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchProducts();
+        }
+    }
+    private async Task OnCategoryChanged(ChangeEventArgs e)
+    {
+        Console.WriteLine($"[Category] Changed to: {e.Value}");
+        if (int.TryParse(e.Value?.ToString(), out int selectedId))
+        {
+            SelectedCategoryId = selectedId;
+        }
+        else
+        {
+            SelectedCategoryId = null;
+        }
 
+        await SearchProducts();
+    }
     private void AddToCart(ProductDTO product)
     {
         // TODO: Add to cart logic
+    }
+    private async Task PrevPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            await LoadProducts();
+        }
+    }
+    private async Task NextPage()
+    {
+        if (CurrentPage < TotalPages)
+        {
+            CurrentPage++;
+            await LoadProducts();
+        }
+    }
+    private async Task GoToPage(int page)
+    {
+        CurrentPage = page;
+        await LoadProducts();
     }
 }

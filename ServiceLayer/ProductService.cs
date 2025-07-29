@@ -17,7 +17,7 @@ namespace ServiceLayer
         }
         public async Task<List<ProductDTO>> GetAllProductsAsync(string search = null, int? categoryId = null)
         {
-            var products = await productRepository.GetProductsAsync(search, categoryId);
+            var products = await productRepository.GetAllProductsAsync(search, categoryId);
             return products.Select(p => new ProductDTO
             {
                 ProductId = p.ProductId,
@@ -27,6 +27,27 @@ namespace ServiceLayer
                 UnitsInStock = p.UnitsInStock,
                 CategoryName = p.Category?.CategoryName ?? "N/A"
             }).ToList();
+        }
+        public async Task<ProductResponse> GetPagedProductsAsync(string search = null, int? categoryId = null, int pageIndex = 1, int pageSize = 9)
+        {
+            var (products, totalCount) = await productRepository.GetPagedProductsAsync(search, categoryId, pageIndex, pageSize);
+
+            var productDtos = products.Select(p => new ProductDTO
+            {
+                ProductId = p.ProductId,
+                ProductName = p.ProductName,
+                UnitPrice = p.UnitPrice,
+                Weight = p.Weight,
+                UnitsInStock = p.UnitsInStock,
+                CategoryName = p.Category?.CategoryName ?? "N/A"
+            }).ToList();
+
+            return new ProductResponse
+            {
+                Products = productDtos,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                PageIndex = pageIndex
+            };
         }
         public async Task<ProductDTO> GetProductByIdAsync(int id)
         {

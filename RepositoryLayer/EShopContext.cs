@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BOs.Entities;
+﻿using BOs.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace RepositoryLayer
@@ -75,7 +70,7 @@ namespace RepositoryLayer
                 .HasMaxLength(100)
                 .IsRequired();
 
-      
+
         }
         // DbSets for your entities
         public DbSet<Product> Products { get; set; }

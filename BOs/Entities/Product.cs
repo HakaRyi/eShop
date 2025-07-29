@@ -1,4 +1,6 @@
-﻿namespace BOs.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BOs.Entities
 {
     public class Product
     {
@@ -8,6 +10,9 @@
         public decimal UnitPrice { get; set; }
         public string Weight { get; set; } = string.Empty;
         public int CategoryId { get; set; }
-        public virtual Category? Category { get; set; } 
+        public virtual Category? Category { get; set; }
+
+        [InverseProperty("Product")]
+        public ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

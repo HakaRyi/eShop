@@ -1,4 +1,3 @@
-using System;
 using BOs;
 using eShop.Components;
 using Microsoft.EntityFrameworkCore;
@@ -23,11 +22,15 @@ namespace eShop
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<EShopContext>(options =>
                 options.UseSqlServer(connectionString));
 
             builder.Services.AddDistributedMemoryCache();
+
+            builder.Services.AddHttpContextAccessor();
+
             builder.Services.AddScoped<MemberService>();
             builder.Services.AddScoped<MemberRepository>();
             builder.Services.AddScoped<ProductService>();
