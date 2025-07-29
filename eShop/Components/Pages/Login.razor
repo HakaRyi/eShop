@@ -64,8 +64,13 @@
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task LoginHandle()
     {
-            var result = await MemberService.Login(LoginModel.Email, LoginModel.Password);
-            if (result != null)
+
+
+        var result = await MemberService.Login(LoginModel.Email, LoginModel.Password);
+        if (result != null)
+        {
+            if (!result.Status)
+
             {
                 if (!result.Status)
                 {
@@ -85,11 +90,34 @@
                     NavigationManager.NavigateTo("/");
                 }
             }
+        
+            var member = await MemberService.GetMemberByEmailAsync(LoginModel.Email);
+            if (member != null)
+            {
+           
+                HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddHours(3),
+                        HttpOnly = false,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                HttpContextAccessor.HttpContext.Response.Cookies.Append("MemberId", member.MemberId.ToString(), new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddHours(3),
+                        HttpOnly = false,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                NavigationManager.NavigateTo("/");
+            }
             else
             {
                 errorMessage = "Invalid Email or Password!";
                 return;
+
             }
+
         }
 
     }
