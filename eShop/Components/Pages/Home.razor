@@ -2,7 +2,10 @@
 @using ServiceLayer
 @using ServiceLayer.DTO
 @inject ProductService ProductService
+@inject OrderService OrderService
 @using eShop
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
 @rendermode InteractiveServer
 <PageTitle>Home</PageTitle>
 
@@ -85,6 +88,7 @@
             }
         </div>
     }
+    
 </div>
 @if (TotalPages > 1)
 {
@@ -117,6 +121,7 @@
     private int PageSize = 9;
     private int CurrentPage = 1;
     private int TotalPages = 1;
+    private bool IsLoggedIn => !string.IsNullOrEmpty(HttpContextAccessor.HttpContext?.Request.Cookies["MemberId"]);
     protected override async Task OnInitializedAsync()
     {
         await LoadProducts();
@@ -169,10 +174,23 @@
 
         await SearchProducts();
     }
-    private void AddToCart(ProductDTO product)
+    private async Task AddToCart(ProductDTO product)
     {
-        // TODO: Add to cart logic
+        if (!IsLoggedIn)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        var memberId = GetCurrentMemberId();
+        await OrderService.AddToCartAsync(memberId, product.ProductId, product.UnitPrice);
+        
     }
+    private int GetCurrentMemberId()
+    {
+        var memberIdCookie = HttpContextAccessor.HttpContext?.Request.Cookies["MemberId"];
+        return int.TryParse(memberIdCookie, out int memberId) ? memberId : 0;
+    }
+   
     private async Task PrevPage()
     {
         if (CurrentPage > 1)

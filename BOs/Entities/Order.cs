@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 
 namespace BOs.Entities
 {
+    public enum OrderStatus
+    {
+        Pending=0,    
+        Success=1    
+    }
     public class Order
     {
         [Key]
@@ -28,7 +33,8 @@ namespace BOs.Entities
 
         [Column(TypeName = "money")]
         public decimal? Freight { get; set; }
-
+        [Column("Status")]
+        public OrderStatus Status { get; set; }
         // Navigation property
         [ForeignKey("MemberId")]
         [InverseProperty("Orders")]

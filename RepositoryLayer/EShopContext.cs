@@ -25,6 +25,9 @@ namespace RepositoryLayer
                 .HasOne(o => o.Member)
                 .WithMany(m => m.Orders)
                 .HasForeignKey(o => o.MemberId);
+            modelBuilder.Entity<Order>()
+                .Property(o => o.Status)
+                .HasDefaultValue(OrderStatus.Pending);
 
             modelBuilder.Entity<OrderDetail>()
                 .HasOne(od => od.Order)

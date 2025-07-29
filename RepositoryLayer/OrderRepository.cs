@@ -15,19 +15,42 @@ namespace RepositoryLayer
         {
             _context = context;
         }
-    
-        public async Task<List<Order>> GetAllOrdersAsync()
+        public async Task<Order> GetPendingOrderByMemberIdAsync(int memberId)
         {
-            return await _context.Orders.ToListAsync();
+            var order = await _context.Orders
+                .Where(o => o.MemberId == memberId && o.Status == OrderStatus.Pending)
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync();
+
+            if (order == null)
+            {
+                order = new Order
+                {
+                    MemberId = memberId,
+                    OrderDate = DateTime.Now,
+                    Status = OrderStatus.Pending
+                };
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+            }
+            return order;
         }
-        public async Task<Order?> GetOrderByIdAsync(int orderId)
-        {
-            return await _context.Orders
-                .FirstOrDefaultAsync(o => o.OrderId == orderId);
-        }
-        public async Task AddOrderAsync(Order order)
+        public async Task CreateOrderAsync(Order order)
         {
             _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddOrderDetailAsync(OrderDetail orderDetail)
+        {
+            _context.OrderDetails.Add(orderDetail);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateOrderDetailAsync(OrderDetail orderDetail)
+        {
+            _context.OrderDetails.Update(orderDetail);
             await _context.SaveChangesAsync();
         }
         public async Task UpdateOrderAsync(Order order)
@@ -35,40 +58,46 @@ namespace RepositoryLayer
             _context.Orders.Update(order);
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteOrderAsync(int orderId)
+
+        public async Task DeleteOrderDetailAsync(int orderDetailId)
         {
-            var order = await GetOrderByIdAsync(orderId);
-            if (order != null)
+            var orderDetail = await _context.OrderDetails.FindAsync(orderDetailId);
+            if (orderDetail != null)
             {
-                _context.Orders.Remove(order);
+                _context.OrderDetails.Remove(orderDetail);
                 await _context.SaveChangesAsync();
             }
         }
-        public async Task<int> CreateOrderAsync(Order order, List<OrderDetail> orderDetails)
+        public async Task<OrderDetail> FindOrderDetailAsync(int orderDetailId)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            return await _context.OrderDetails.FindAsync(orderDetailId);
+        }
+        public async Task<Order> FindOrderByIdAsync(int orderId)
+        {
+            return await _context.Orders.FindAsync(orderId);
+        }
+        public async Task UpdateOrderStatusAsync(int orderId, OrderStatus status)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order != null)
             {
-                
-                _context.Orders.Add(order);
-                await _context.SaveChangesAsync();
-
-
-                foreach (var detail in orderDetails)
+                order.Status = OrderStatus.Success;
+                if (status == OrderStatus.Success)
                 {
-                    detail.OrderId = order.OrderId;
-                    _context.OrderDetails.Add(detail);
+                    order.ShippedDate = DateTime.Now.AddDays(3); 
                 }
+                order.OrderDate = DateTime.Now; 
+                _context.Orders.Update(order);
                 await _context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-                return order.OrderId;
             }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+        }
+        public async Task<List<OrderDetail>> GetOrderDetailsByMemberIdAsync(int memberId)
+        {
+            return await _context.OrderDetails
+                .Where(od => od.Order.MemberId == memberId && od.Order.Status == OrderStatus.Success)
+                .Include(od => od.Product)
+                .Include(od => od.Order)
+                .ToListAsync();
         }
     }
 }

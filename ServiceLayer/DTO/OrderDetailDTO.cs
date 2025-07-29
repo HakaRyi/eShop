@@ -6,11 +6,15 @@ using System.Threading.Tasks;
 
 namespace ServiceLayer.DTO
 {
-    public class CartItemDTO
+    public class OrderDetailDTO
     {
+        public int OrderDetailId { get; set; }
         public int ProductId { get; set; }
-        public string ProductName { get; set; }
         public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }
-        }
+        public float Discount { get; set; }
+        public string ProductName { get; set; }
+        public int OrderId { get; set; }
+        public DateTime OrderDate { get; set; }
+    }
 }

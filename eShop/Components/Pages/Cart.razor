@@ -1,17 +1,156 @@
 ﻿@page "/cart"
 @using ServiceLayer
 @using ServiceLayer.DTO
-@inject OrderService orderService
-@using eShop
+@inject OrderService OrderService
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+@rendermode InteractiveServer
 
 <PageTitle>Cart</PageTitle>
-<h1>Cart</h1>
 
+<link href="css/cart.css" rel="stylesheet" />
 
+<div class="cart-container">
+    <h1>Shopping Cart</h1>
+    <NavLink href="/" style="text-decoration: none; margin-bottom: 20px; display: inline-block;">
+        <button style="padding: 8px 16px; font-size: 16px; background-color: #4facfe; color: white; border: none; border-radius: 6px;">
+            Back to Home
+        </button>
+    </NavLink>
+
+    @if (!IsLoggedIn)
+    {
+        <p class="status-message">Please <a href="/login">login</a> to view your cart.</p>
+    }
+    else if (Order == null || Order.OrderDetails == null || !Order.OrderDetails.Any())
+    {
+        <p class="status-message">Your cart is empty.</p>
+    }
+    else
+    {
+        <div class="cart-items">
+            @foreach (var detail in Order.OrderDetails)
+            {
+                <div class="cart-item">
+                    <h4>@detail.ProductName - @detail.UnitPrice.ToString("C") x @detail.Quantity</h4>
+                    <input type="number" @bind="detail.Quantity" @bind:event="oninput" @onchange="() => UpdateCart(detail)" min="1" class="quantity-input" />
+                     
+                    <button @onclick="() => RemoveFromCart(detail.OrderDetailId)" class="remove-button">Remove</button>
+                </div>
+            }
+            <div class="cart-shipping">
+                <label for="requiredDate">Required Delivery Date:</label>
+                <input type="date" id="requiredDate" @bind="SelectedRequiredDate" class="date-input" />
+                <p>Shipping Fee: @(Order.Freight.HasValue ? Order.Freight.Value.ToString("C") : "Not calculated yet")</p>
+            </div>
+            <div class="cart-total">
+                <p>Total: <strong>@((Order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity) + (Order.Freight ?? 0m)).ToString("C"))</strong></p>
+                <button @onclick="Checkout" class="checkout-button">Checkout</button>
+            </div>
+        </div>
+    }
+    <div class="order-history">
+        <h2>Order History</h2>
+        @if (OrderHistory == null || !OrderHistory.Any())
+        {
+            <p class="status-message">No order history available.</p>
+        }
+        else
+        {
+            @foreach (var detail in OrderHistory)
+            {
+                <div class="history-item">
+                    <h4>@detail.ProductName - @( (detail.UnitPrice * detail.Quantity).ToString("C") )</h4>
+                    <p>Order Date: @detail.OrderDate.ToString("dd/MM/yyyy") | Order ID: @detail.OrderId</p>
+                </div>
+            }
+        }
+    </div>
+</div>
 
 @code {
-   
+    private OrderDTO Order { get; set; }
+    private DateTime? SelectedRequiredDate { get; set; }
+    private List<OrderDetailDTO> OrderHistory { get; set; }
+    private bool IsLoggedIn => !string.IsNullOrEmpty(HttpContextAccessor.HttpContext?.Request.Cookies["MemberId"]);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCart();
+        await LoadOrderHistory();
+    }
+
+    private async Task LoadCart()
+    {
+        if (!IsLoggedIn)
+        {
+            return;
+        }
+        try
+        {
+            var memberId = GetCurrentMemberId();
+            Order = await OrderService.GetPendingOrderByMemberIdAsync(memberId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Cart] ❌ Exception: {ex}");
+        }
+    }
+
+    private async Task UpdateCart(OrderDetailDTO detail)
+    {
+        if (detail.Quantity <= 0)
+        {
+            detail.Quantity = 1;
+            StateHasChanged();
+            return;
+        }
+        try
+        {
+            await OrderService.UpdateCartAsync(detail.OrderDetailId, detail.Quantity);
+            await LoadCart(); // Tải lại để đồng bộ với database
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[UpdateCart] ❌ Exception: {ex}");
+            await LoadCart(); // Tải lại để khôi phục trạng thái
+        }
+    }
+
+    private async Task RemoveFromCart(int orderDetailId)
+    {
+        await OrderService.DeleteFromCartAsync(orderDetailId);
+        await LoadCart(); // Tải lại để cập nhật giao diện
+    }
+
+    private async Task Checkout()
+    {
+        if (Order != null && Order.OrderDetails.Any())
+        {
+            await OrderService.CheckoutAsync(Order.OrderId, SelectedRequiredDate);
+            NavigationManager.NavigateTo("/"); 
+        }
+    }
+    private int GetCurrentMemberId()
+    {
+        var memberIdCookie = HttpContextAccessor.HttpContext?.Request.Cookies["MemberId"];
+        return int.TryParse(memberIdCookie, out int memberId) ? memberId : 0;
+    }
+    private async Task LoadOrderHistory()
+    {
+        if (!IsLoggedIn)
+        {
+            return;
+        }
+        try
+        {
+            var memberId = GetCurrentMemberId();
+            OrderHistory = await OrderService.GetOrderHistoryByMemberIdAsync(memberId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[OrderHistory] ❌ Exception: {ex}");
+        }
+    }
 }
-
-
-

@@ -1,4 +1,5 @@
 using BOs;
+using BOs.Entities;
 using eShop.Components;
 using Microsoft.EntityFrameworkCore;
 using RepositoryLayer;
@@ -19,8 +20,8 @@ namespace eShop
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
+                options.Cookie.HttpOnly = true; 
+                options.Cookie.IsEssential = true; 
             });
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -28,7 +29,7 @@ namespace eShop
                 options.UseSqlServer(connectionString));
 
             builder.Services.AddDistributedMemoryCache();
-
+            //builder.Services.AddServerSideBlazor();
             builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddScoped<MemberService>();
@@ -37,7 +38,6 @@ namespace eShop
             builder.Services.AddScoped<ProductRepository>();
             builder.Services.AddScoped<OrderRepository>();
             builder.Services.AddScoped<OrderService>();
-                
 
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
@@ -45,6 +45,26 @@ namespace eShop
                 var context = scope.ServiceProvider.GetRequiredService<EShopContext>();
                 context.Database.EnsureCreated();
                 Console.WriteLine("EnsureCreated called from Program.cs");
+                if (!context.Categories.Any())
+                {
+                    context.Categories.Add(new Category { CategoryName = "Electronics", Description = "Electronic products" });
+                    context.Categories.Add(new Category { CategoryName = "Clothing", Description = "Clothing products" });
+                    context.SaveChanges();
+
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        context.Products.Add(new Product
+                        {
+                            ProductName = $"Product {i}",
+                            UnitPrice = 10 * i,
+                            UnitsInStock = 50,
+                            CategoryId = i % 2 == 0 ? 1 : 2,
+                            Weight = $"{i}kg"
+                        });
+                    }
+                    context.SaveChanges();
+                    Console.WriteLine("Sample data added at {DateTime.Now}");
+                }
             }
 
 
@@ -57,10 +77,10 @@ namespace eShop
             }
 
             app.UseHttpsRedirection();
-            app.UseSession();
+           
             app.UseStaticFiles();
             app.UseAntiforgery();
-
+            app.UseSession();
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 

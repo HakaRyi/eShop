@@ -22,5 +22,10 @@ namespace RepositoryLayer
         {
             return await _context.Members.FirstOrDefaultAsync(m => m.Email == email && m.Password == password);
         }
+        //Get Member by Email
+        public async Task<Member?> GetMemberByEmailAsync(string email)
+        {
+            return await _context.Members.FirstOrDefaultAsync(m => m.Email == email);
+        }
     }
 }

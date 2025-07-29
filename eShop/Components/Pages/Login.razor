@@ -2,7 +2,6 @@
 @using Microsoft.EntityFrameworkCore
 @using ServiceLayer.DTO
 @using ServiceLayer
-
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -59,14 +58,32 @@
                 errorMessage = "You do not have permission to do this function!";
                 return;
             }
-            HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+            // Lấy MemberID từ email
+            var member = await MemberService.GetMemberByEmailAsync(LoginModel.Email);
+            if (member != null)
             {
-                Expires = DateTimeOffset.Now.AddHours(3),
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict
-            });
-            NavigationManager.NavigateTo("/");
+                // Lưu cả Email và MemberID vào cookie
+                HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddHours(3),
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                HttpContextAccessor.HttpContext.Response.Cookies.Append("MemberId", member.MemberId.ToString(), new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddHours(3),
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Member not found!";
+            }
+           
         }
         else
         {
@@ -74,4 +91,5 @@
             return;
         }
     }
+    
 }
