@@ -4,6 +4,7 @@
 @inject OrderService OrderService
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JS // Thêm IJSRuntime
 @rendermode InteractiveServer
 
 <PageTitle>Cart</PageTitle>
@@ -34,13 +35,16 @@
                 <div class="cart-item">
                     <h4>@detail.ProductName - @detail.UnitPrice.ToString("C") x @detail.Quantity</h4>
                     <input type="number" @bind="detail.Quantity" @bind:event="oninput" @onchange="() => UpdateCart(detail)" min="1" class="quantity-input" />
-                     
-                    <button @onclick="() => RemoveFromCart(detail.OrderDetailId)" class="remove-button">Remove</button>
+                    <button @onclick="() => ConfirmRemove(detail.OrderDetailId)" class="remove-button">Remove</button>
                 </div>
             }
             <div class="cart-shipping">
                 <label for="requiredDate">Required Delivery Date:</label>
                 <input type="date" id="requiredDate" @bind="SelectedRequiredDate" class="date-input" />
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <p class="error-message">@ErrorMessage</p>
+                }
                 <p>Shipping Fee: @(Order.Freight.HasValue ? Order.Freight.Value.ToString("C") : "Not calculated yet")</p>
             </div>
             <div class="cart-total">
@@ -60,7 +64,7 @@
             @foreach (var detail in OrderHistory)
             {
                 <div class="history-item">
-                    <h4>@detail.ProductName - @( (detail.UnitPrice * detail.Quantity).ToString("C") )</h4>
+                    <h4>@detail.ProductName - @((detail.UnitPrice * detail.Quantity).ToString("C"))</h4>
                     <p>Order Date: @detail.OrderDate.ToString("dd/MM/yyyy") | Order ID: @detail.OrderId</p>
                 </div>
             }
@@ -72,6 +76,7 @@
     private OrderDTO Order { get; set; }
     private DateTime? SelectedRequiredDate { get; set; }
     private List<OrderDetailDTO> OrderHistory { get; set; }
+    private string ErrorMessage { get; set; }
     private bool IsLoggedIn => !string.IsNullOrEmpty(HttpContextAccessor.HttpContext?.Request.Cookies["MemberId"]);
 
     protected override async Task OnInitializedAsync()
@@ -90,6 +95,7 @@
         {
             var memberId = GetCurrentMemberId();
             Order = await OrderService.GetPendingOrderByMemberIdAsync(memberId);
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -108,34 +114,58 @@
         try
         {
             await OrderService.UpdateCartAsync(detail.OrderDetailId, detail.Quantity);
-            await LoadCart(); // Tải lại để đồng bộ với database
+            await LoadCart();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[UpdateCart] ❌ Exception: {ex}");
-            await LoadCart(); // Tải lại để khôi phục trạng thái
+            await LoadCart();
+        }
+    }
+
+    private async Task ConfirmRemove(int orderDetailId)
+    {
+        // Hiển thị hộp thoại xác nhận bằng JavaScript
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to remove this item?");
+        if (confirmed)
+        {
+            await RemoveFromCart(orderDetailId);
         }
     }
 
     private async Task RemoveFromCart(int orderDetailId)
     {
         await OrderService.DeleteFromCartAsync(orderDetailId);
-        await LoadCart(); // Tải lại để cập nhật giao diện
+        await LoadCart();
     }
 
     private async Task Checkout()
     {
-        if (Order != null && Order.OrderDetails.Any())
+        if (Order == null || !Order.OrderDetails.Any())
         {
-            await OrderService.CheckoutAsync(Order.OrderId, SelectedRequiredDate);
-            NavigationManager.NavigateTo("/"); 
+            return;
         }
+
+        if (SelectedRequiredDate.HasValue && SelectedRequiredDate.Value < DateTime.Today)
+        {
+            ErrorMessage = "Required delivery date cannot be in the past.";
+            StateHasChanged();
+            return;
+        }
+
+        ErrorMessage = null;
+        StateHasChanged();
+
+        await OrderService.CheckoutAsync(Order.OrderId, SelectedRequiredDate);
+        NavigationManager.NavigateTo("/");
     }
+
     private int GetCurrentMemberId()
     {
         var memberIdCookie = HttpContextAccessor.HttpContext?.Request.Cookies["MemberId"];
         return int.TryParse(memberIdCookie, out int memberId) ? memberId : 0;
     }
+
     private async Task LoadOrderHistory()
     {
         if (!IsLoggedIn)

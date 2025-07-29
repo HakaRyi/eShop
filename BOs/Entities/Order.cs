@@ -26,6 +26,7 @@ namespace BOs.Entities
         public DateTime OrderDate { get; set; }
 
         [Column(TypeName = "datetime")]
+        [CustomValidation(typeof(Order), "ValidateRequiredDate")]
         public DateTime? RequiredDate { get; set; }
 
         [Column(TypeName = "datetime")]
@@ -45,6 +46,15 @@ namespace BOs.Entities
 
         [InverseProperty("Order")]
         public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+
+        public static ValidationResult ValidateRequiredDate(DateTime? requiredDate, ValidationContext context)
+        {
+            if (requiredDate.HasValue && requiredDate.Value < DateTime.Today)
+            {
+                return new ValidationResult("Required delivery date cannot be in the past.", new[] { nameof(RequiredDate) });
+            }
+            return ValidationResult.Success;
+        }
 
     }
 }
