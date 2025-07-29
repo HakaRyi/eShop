@@ -84,7 +84,7 @@ namespace ServiceLayer
                 return false;
             }
             return true;
-          
+        }
         public async Task<MemberDTO> GetMemberByEmailAsync(string email)
         {
             var member = await _repo.GetMemberByEmailAsync(email);

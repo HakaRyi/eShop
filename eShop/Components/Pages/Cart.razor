@@ -77,7 +77,7 @@
     private DateTime? SelectedRequiredDate { get; set; }
     private List<OrderDetailDTO> OrderHistory { get; set; }
     private string ErrorMessage { get; set; }
-    private bool IsLoggedIn => !string.IsNullOrEmpty(HttpContextAccessor.HttpContext?.Request.Cookies["MemberId"]);
+    private bool IsLoggedIn => HttpContextAccessor.HttpContext.Request.Cookies.TryGetValue("UserEmail", out var email);
 
     protected override async Task OnInitializedAsync()
     {

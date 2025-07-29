@@ -73,15 +73,15 @@
                 return;
             }
             else
-             {
-             HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
-             {
-                 Expires = DateTimeOffset.Now.AddHours(3),
-                 HttpOnly = false,
-                 Secure = true,
-                 SameSite = SameSiteMode.Strict
-             });
-             NavigationManager.NavigateTo("/");
+            {
+                 HttpContextAccessor.HttpContext.Response.Cookies.Append("UserEmail", LoginModel.Email, new CookieOptions
+                 {
+                     Expires = DateTimeOffset.Now.AddHours(3),
+                     HttpOnly = false,
+                     Secure = true,
+                     SameSite = SameSiteMode.Strict
+                 });
+                 NavigationManager.NavigateTo("/");
             }
         }
         else
