@@ -48,10 +48,14 @@
                 {
                     <p class="error-message">@ErrorMessage</p>
                 }
-                <p>Shipping Fee: @(Order.Freight.HasValue ? Order.Freight.Value.ToString("C", CultureInfo.GetCultureInfo("vi-VN")) : "Not calculated yet")</p>
+                <div><br>
+                    <p>Provisional Cost: @((Order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity)).ToString("C", CultureInfo.GetCultureInfo("vi-VN")))</p>
+                    <p>Shipping Fee: @(Order.Freight.HasValue ? Order.Freight.Value.ToString("C", CultureInfo.GetCultureInfo("vi-VN")) : "Not calculated yet")</p>
+                </div>
+               
             </div>
             <div class="cart-total">
-                <p>Total: <strong>@((Order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity) + (Order.Freight ?? 0m)).ToString("C"))</strong></p>
+                <p>Total: <strong>@((Order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity) + (Order.Freight ?? 0m)).ToString("C",CultureInfo.GetCultureInfo("vi-VN")))</strong></p>
                 @* <button @onclick="Checkout" class="checkout-button">Checkout</button> *@
                 <button @onclick="PayWithPayOS" class="checkout-button">Checkout</button>
             </div>

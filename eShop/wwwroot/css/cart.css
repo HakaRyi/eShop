@@ -160,6 +160,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: cornflowerblue;
+    font-size: 25px;
 }
 
 .total-text {
