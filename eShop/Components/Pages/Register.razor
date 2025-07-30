@@ -20,13 +20,13 @@
         </div>
         <div>
             <label for="register-password" class="form-label">Password:</label>
-            <InputText id="register-password" @bind-Value="RegisterModel.Password" class="form-control" />
+            <InputText id="register-password" @bind-Value="RegisterModel.Password" class="form-control" type="password" />
             <ValidationMessage For="() => RegisterModel.Password" class="text-danger" />
         </div>
 
         <div>
             <label for="confirm_password" class="form-label">Confirm Password:</label>
-            <InputText id="confirm_password" @bind-Value="RegisterModel.ConfirmPassword" class="form-control" />
+            <InputText id="confirm_password" @bind-Value="RegisterModel.ConfirmPassword" class="form-control" type="password" />
             <ValidationMessage For="() => RegisterModel.ConfirmPassword" class="text-danger" />
         </div>
 

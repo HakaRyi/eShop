@@ -94,5 +94,21 @@ namespace ServiceLayer
             }
             return null;
         }
+
+        public async Task<bool> ChangePassword(ChangePasswordDTO dto)
+        {
+            Member member = await _repo.GetById(dto.MemberId);
+            if (member == null)
+            {
+                return false;
+            }
+            member.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            var result = await _repo.Update(member);
+            if (result == null)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

@@ -15,12 +15,17 @@
 <link href="css/Profile.css" rel="stylesheet" />
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">My Profile</h2>
-    <button class="btn btn-outline-danger btn-sm" @onclick=Logout>Logout</button>
+    @if (profile != null)
+    {
+        <button class="btn btn-outline-danger btn-sm" @onclick=Logout
+        >Logout</button>
+    }
 </div>
 
 @if (profile == null)
 {
     <p>Loading profile...</p>
+    <NavLink href="login">You have to login to do this function!</NavLink>
 }
 else
 {
@@ -59,6 +64,45 @@ else
                 <div class="alert alert-danger">@errorMessage</div>
             }
             <button type="submit" class="submit">Update</button>
+        </EditForm>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Change Password</strong>
+        </div>
+        <EditForm method="post" Model="ChangePasswordModel" OnValidSubmit="ChangePasswordHandle" FormName="changePassword" Enhance class="form sign-in">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <input type="hidden" name="Member.Id" value="@profile.MemberId" />
+            <div>
+                <label for="current-password" class="form-label">Current Password:</label>
+                <InputText id="current-password" @bind-Value="ChangePasswordModel.CurrentPassword" class="form-control" type="password" />
+                <ValidationMessage For="() => ChangePasswordModel.CurrentPassword" class="text-danger" />
+            </div>
+
+            <div>
+                <label for="register-password" class="form-label">Password:</label>
+                <InputText id="register-password" @bind-Value="ChangePasswordModel.Password" class="form-control" type="password" />
+                <ValidationMessage For="() => ChangePasswordModel.Password" class="text-danger" />
+            </div>
+
+            <div>
+                <label for="confirm_password" class="form-label">Confirm Password:</label>
+                <InputText id="confirm_password" @bind-Value="ChangePasswordModel.ConfirmPassword" class="form-control" type="password" />
+                <ValidationMessage For="() => ChangePasswordModel.ConfirmPassword" class="text-danger" />
+            </div>
+            @if (!string.IsNullOrWhiteSpace(passwordError))
+            {
+                <div class="alert alert-danger">@passwordError</div>
+            }
+            @if (ChangeSuccessfully)
+            {
+                <meta http-equiv="refresh" content="2;url=/profile" />
+                <div class="alert alert-success mt-3">
+                    Update successfully, loading new content...
+                </div>
+            }
+            <button type="submit" class="submit">Save Change</button>
         </EditForm>
     </div>
 
@@ -206,11 +250,16 @@ else
 @code {
     [SupplyParameterFromForm]
     private UpdateMemberDTO EditModel { get; set; } = new();
+    [SupplyParameterFromForm]
+    private ChangePasswordDTO ChangePasswordModel { get; set; } = new();
+
     private Member profile;
     [Inject]
     private MemberService MemberService { get; set; }
 
     string errorMessage;
+    string passwordError;
+    bool ChangeSuccessfully = false;
 
     // Paging Here: =(((
     private int currentPage = 1;
@@ -241,7 +290,7 @@ else
                 .Skip((transactionPage - 1) * transactionPageSize)
                 .Take(transactionPageSize);
 
-     private void ChangeTransactionPage(int page)
+    private void ChangeTransactionPage(int page)
     {
         if (page >= 1 && page <= totalTransactionPages)
         {
@@ -283,6 +332,41 @@ else
         else
         {
             errorMessage = "Email have been existed";
+        }
+    }
+
+    private async Task ChangePasswordHandle()
+    {
+        bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(ChangePasswordModel.CurrentPassword, profile.Password);
+        if (!isPasswordCorrect)
+        {
+            passwordError = "current password is not correct, try again";
+            return;
+        }
+        else
+        {
+            if(ChangePasswordModel.CurrentPassword == ChangePasswordModel.Password)
+            {
+                passwordError = "new password must be different from current password, try again";
+                return;
+            }
+            ChangePasswordModel.MemberId = profile.MemberId;
+            try
+            {
+                var result = await MemberService.ChangePassword(ChangePasswordModel);
+                if(result == true)
+                {
+                    ChangeSuccessfully = true;
+                }
+            }
+            catch
+            {
+                passwordError = "Change password fail";
+            }
+            finally
+            {
+                
+            }
         }
     }
 
