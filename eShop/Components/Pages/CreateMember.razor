@@ -1,0 +1,78 @@
+﻿@page "/CreateMember"
+
+@inject NavigationManager NavManager
+@inject IMemberService MemberService
+@using ServiceLayer.Interfaces
+@using BOs.Entities
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+
+<div class="row">
+    <div class="col-lg-8">
+        <h1 class="mb-5">New Member</h1>
+
+        <EditForm Model="member" OnValidSubmit="HandleValidSubmit" FormName="CreateMemberForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText class="form-control" @bind-Value="member.Email" />
+                <ValidationMessage For="@(() => member.Email)" />
+            </div>
+
+            <div class="mb-3">
+                <label>Password</label>
+                <InputText class="form-control" type="password" @bind-Value="member.Password" />
+                <ValidationMessage For="@(() => member.Password)" />
+            </div>
+
+            <div class="mb-3">
+                <label>Company Name</label>
+                <InputText class="form-control" @bind-Value="member.CompanyName" />
+                <ValidationMessage For="@(() => member.CompanyName)" />
+            </div>
+
+            <div class="mb-3">
+                <label>City</label>
+                <InputText class="form-control" @bind-Value="member.City" />
+                <ValidationMessage For="@(() => member.City)" />
+            </div>
+
+            <div class="mb-3">
+                <label>Country</label>
+                <InputSelect class="form-control" @bind-Value="member.Country">
+                    <option value="">-- Select Country --</option>
+                    <option value="USA">USA</option>
+                    <option value="Vietnam">Vietnam</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Germany">Germany</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => member.Country)" />
+            </div>
+
+            <button class="btn btn-success" type="submit">Save</button>
+            <button class="btn btn-secondary" type="button" @onclick="Cancel">Cancel</button>
+        </EditForm>
+
+        <!-- Debug: Show model type being used -->
+        <p class="text-muted mt-3"><strong>Model:</strong> @member?.GetType().FullName</p>
+    </div>
+</div>
+
+@code {
+    // Dùng đúng kiểu rõ ràng từ BOs.Entities
+    private BOs.Entities.Member member { get; set; } = new();
+
+    private void HandleValidSubmit()
+    {
+        member.Status = true;
+        MemberService.CreateMember(member);
+        NavManager.NavigateTo("/");
+    }
+
+    private void Cancel()
+    {
+        NavManager.NavigateTo("/");
+    }
+}

@@ -1,8 +1,10 @@
-using BOs;
+﻿using BOs;
 using eShop.Components;
 using Microsoft.EntityFrameworkCore;
 using RepositoryLayer;
+using RepositoryLayer.Interfaces;
 using ServiceLayer;
+using ServiceLayer.Interfaces;
 
 namespace eShop
 {
@@ -17,26 +19,52 @@ namespace eShop
                 .AddInteractiveServerComponents();
 
             builder.Services.AddSession();
+            builder.Services.AddDistributedMemoryCache();
 
+            // Register DbContext with connection string
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<EShopContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            builder.Services.AddDistributedMemoryCache();
+            // ====== REGISTER REPOSITORIES & SERVICES ======
 
-            builder.Services.AddScoped<MemberService>();
-            builder.Services.AddScoped<MemberRepository>();
+            // Member
+            builder.Services.AddScoped<MemberRepository>();              // ✅ Repository
+            builder.Services.AddScoped<IMemberService, MemberService>(); // ✅ Service qua interface
+
+			// Product
+			builder.Services.AddScoped<IProductRepository, ProductRepository>();
+			builder.Services.AddScoped<IProductService, ProductService>();
+
+			// Category
+			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+			builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+			// Order
+			builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+			builder.Services.AddScoped<IOrderService, OrderService>();
+
+			// OrderDetail
+			builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+			builder.Services.AddScoped<IOrderDetailService, OrderDetailService>();
+
+			// Transaction
+			builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+            builder.Services.AddScoped<ITransactionService, TransactionService>();
+
+            // Feedback
+            builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+            builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+
+            // ==================================================
 
             var app = builder.Build();
-
-
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                app.UseHsts(); // 30 days HSTS default
             }
 
             app.UseHttpsRedirection();

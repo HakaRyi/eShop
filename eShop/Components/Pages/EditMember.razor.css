@@ -1,0 +1,95 @@
+﻿.page-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    animation: fade-in 1s ease-in-out;
+}
+
+.loading-text {
+    text-align: center;
+    font-style: italic;
+    font-size: 1.2rem;
+}
+
+.form-container {
+    max-width: 600px;
+    margin: auto;
+    background: linear-gradient(to right, #f8f9fa, #e3f2fd);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+}
+
+    .form-container:hover {
+        transform: scale(1.01);
+    }
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    transition: border-color 0.3s;
+    font-size: 1rem;
+}
+
+    .input-field:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0,123,255,0.5);
+    }
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.save-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+    .save-btn:hover {
+        background-color: #218838;
+    }
+
+.cancel-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+    .cancel-btn:hover {
+        background-color: #c82333;
+    }
+
+/* Animation */
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.8s ease-in-out;
+}

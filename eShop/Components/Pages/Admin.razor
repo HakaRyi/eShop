@@ -1,0 +1,70 @@
+﻿@page "/"
+@using ServiceLayer.Interfaces
+@using BOs.Entities
+@inject NavigationManager Navigation
+
+<h1 class="title">USER MANAGEMENT</h1>
+
+<div class="create-member-container">
+    <a class="create-member-btn" href="/CreateMember">
+        ➕ Create New Member
+    </a>
+</div>
+
+@if (members == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="member-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Company</th>
+                <th>City</th>
+                <th>Country</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var member in members)
+            {
+                <tr class="fade-in">
+                    <td>@member.MemberId</td>
+                    <td>@member.Email</td>
+                    <td>@member.CompanyName</td>
+                    <td>@member.City</td>
+                    <td>@member.Country</td>
+                    <td>
+                        <a href="@($"/EditMember/{member.MemberId}")" class="icon-link edit-link" title="Edit">
+                            ✏️
+                        </a>
+                        <button class="icon-btn delete-btn" title="Delete" @onclick="() => DeleteMember(member)">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Inject]
+    private IMemberService MemberService { get; set; }
+
+    private List<Member> members;
+
+    protected override async Task OnInitializedAsync()
+    {
+        members = MemberService.GetAllMembers();
+    }
+
+    private void DeleteMember(Member member)
+    {
+        MemberService.DeleteMember(member);
+        members = MemberService.GetAllMembers(); // Refresh list
+    }
+}

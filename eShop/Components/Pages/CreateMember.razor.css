@@ -1,0 +1,57 @@
+﻿.form-wrapper {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.4s ease-in-out;
+    transition: all 0.3s ease-in-out;
+}
+
+h1 {
+    color: #ff6b35;
+    font-weight: 700;
+}
+
+label {
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control:focus {
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+}
+
+.btn-save {
+    background-color: #28a745;
+    border: none;
+    font-weight: 600;
+    padding: 10px 24px;
+}
+
+.btn-cancel {
+    background-color: #6c757d;
+    border: none;
+    font-weight: 600;
+    padding: 10px 24px;
+}
+
+.btn-save:hover {
+    background-color: #218838;
+}
+
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

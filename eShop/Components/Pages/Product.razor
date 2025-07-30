@@ -1,0 +1,53 @@
+﻿@page "/Product"
+@using BOs.Entities
+@using ServiceLayer.Interfaces
+@inject IProductService ProductService
+
+<h3>Product List</h3>
+
+@if (products == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!products.Any())
+{
+    <p><em>No products found.</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Name</th>
+                <th>Unit Price</th>
+                <th>Units In Stock</th>
+                <th>Weight</th>
+                <th>Category</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (BOs.Entities.Product p in products)
+            {
+                <tr>
+                    <td>@p.ProductId</td>
+                    <td>@p.ProductName</td>
+                    <td>@p.UnitPrice</td>
+                    <td>@p.UnitsInStock</td>
+                    <td>@p.Weight</td>
+                    <td>@p.Category?.CategoryName</td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<BOs.Entities.Product> products;
+
+    protected override void OnInitialized()
+    {
+        products = ProductService.GetAllProducts();
+    }
+}

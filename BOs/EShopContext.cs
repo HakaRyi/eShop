@@ -19,6 +19,11 @@ namespace BOs
                 Console.WriteLine($"Error in EnsureCreated: {ex.Message}");
             }
         }
+
+        public EShopContext()
+        {
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configure entity relationships and properties here

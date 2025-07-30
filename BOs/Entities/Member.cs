@@ -10,9 +10,8 @@ namespace BOs.Entities
    
     public class Member
     {
-        [Required]
         public int MemberId { get; set; }
-        [Required (ErrorMessage ="Email is reqired")]
+        [Required(ErrorMessage = "Email is required")]
         [StringLength(100)]
         public string Email { get; set; }
 

@@ -1,5 +1,5 @@
-﻿@page "/"
-@using ServiceLayer
+﻿@page "/home"
+@using ServiceLayer.Interfaces
 
 
 <PageTitle>Home</PageTitle>
@@ -9,10 +9,12 @@
 Welcome to your new app.
 @code{
     [Inject]
-    private MemberService MemberService { get; set; }
+    private IMemberService MemberService { get; set; } // ✅ inject theo interface
 
     protected override async Task OnInitializedAsync()
     {
-        var member = await MemberService.GetMembers(); // tùy vào hàm của bạn
+        var members = MemberService.GetAllMembers(); // hoặc dùng async nếu bạn đổi
     }
+
+
 }
